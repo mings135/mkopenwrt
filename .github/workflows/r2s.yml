@@ -79,6 +79,8 @@ jobs:
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a || ./scripts/feeds install -a
+          cat .config
+          exit 1
           make defconfig
           make download -j8
 
