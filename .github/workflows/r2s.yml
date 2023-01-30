@@ -78,7 +78,7 @@ jobs:
         working-directory: ${{ env.src_directory }}
         run: |
           ./scripts/feeds update -a
-          ./scripts/feeds install -a || ./scripts/feeds install
+          ./scripts/feeds install -a || ./scripts/feeds install -a
           make defconfig
           make download -j8
 
