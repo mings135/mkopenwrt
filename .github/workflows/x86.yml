@@ -12,7 +12,7 @@ on:
 
   # 定时调度
   schedule:
-    - cron: "2 0 1-7,15-21 * 6"
+    - cron: "2 0 1-7,15-21 * 5"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,7 +20,7 @@ on:
 # 设置环境变量
 env:
   TZ: Asia/Shanghai
-  my_device: r2s
+  my_device: x86
   src_directory: lede
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -81,7 +81,7 @@ jobs:
         run: |
           echo "release_tag=$(date +"%Y.%m.%d")-${{ env.my_device }}" >> $GITHUB_OUTPUT
           echo "release_name=$(date +"%Y.%m.%d") ${{ env.my_device }} firmware" >> $GITHUB_OUTPUT
-          echo "release_path=$(pwd)/${{ env.src_directory }}/bin/targets/rockchip/armv8" >> $GITHUB_OUTPUT
+          echo "release_path=$(pwd)/${{ env.src_directory }}/bin/targets/x86/64" >> $GITHUB_OUTPUT
           echo "release_status=ok" >> $GITHUB_OUTPUT
 
       # 上传固件
@@ -94,7 +94,7 @@ jobs:
           name: "${{ steps.myval.outputs.release_name }}"
           tag_name: "${{ steps.myval.outputs.release_tag }}"
           body_path: ${{ env.my_device }}.md
-          files: ${{ steps.myval.outputs.release_path }}/*.img.gz
+          files: ${{ steps.myval.outputs.release_path }}/*{efi.img.gz,vmdk}
 
       # 删除历史工作流
       - name: Delete workflow runs
