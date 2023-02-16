@@ -94,7 +94,9 @@ jobs:
           name: "${{ steps.myval.outputs.release_name }}"
           tag_name: "${{ steps.myval.outputs.release_tag }}"
           body_path: ${{ env.my_device }}.md
-          files: ${{ steps.myval.outputs.release_path }}/*{efi.img.gz,vmdk}
+          files: |
+            ${{ steps.myval.outputs.release_path }}/*.img.gz
+            ${{ steps.myval.outputs.release_path }}/*.vmdk
 
       # 删除历史工作流
       - name: Delete workflow runs
