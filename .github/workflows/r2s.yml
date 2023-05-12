@@ -44,7 +44,7 @@ jobs:
       # 克隆项目
       - name: Clone project
         run: |
-          git clone -b e9553e8101981f7283bc34dfe0244320c44fbef7 --depth=1 https://github.com/coolsnowwolf/lede ${{ env.src_directory }}
+          git clone --depth=1 https://github.com/coolsnowwolf/lede ${{ env.src_directory }}
 
       # 修改配置
       - name: Modify config
