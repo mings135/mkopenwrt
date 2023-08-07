@@ -35,6 +35,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # when set to "true" but frees about 6 GB
+          tool-cache: true
+
       # 准备环境
       - name: Prepare env
         run: |
@@ -46,6 +53,7 @@ jobs:
             mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pyelftools \
             libpython3-dev qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip \
             vim wget xmlto xxd zlib1g-dev
+
       # 克隆项目
       - name: Clone project
         run: |
@@ -81,7 +89,7 @@ jobs:
       - name: Compile firmware
         working-directory: ${{ env.src_directory }}
         run: |
-          make V=s -j$(nproc) || make V=s -j$(nproc)
+          make V=s -j$(nproc)
 
       # 创建信息
       - name: Release info
