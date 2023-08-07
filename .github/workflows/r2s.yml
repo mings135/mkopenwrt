@@ -126,7 +126,7 @@ jobs:
         with:
           token: ${{ secrets.MY_TOKEN }}
           retain_days: 1
-          keep_minimum_runs: 9
+          keep_minimum_runs: 6
 
       # 删除历史版本
       - name: Delete older Releases
@@ -135,5 +135,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         with:
-          keep_latest: 9
+          keep_latest: 6
           delete_tags: true
