@@ -12,7 +12,7 @@ on:
 
   # 定时调度
   schedule:
-    - cron: "2 0 1,15 * *"
+    - cron: "6 0 * * 6"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -135,5 +135,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         with:
-          keep_latest: 6
+          keep_latest: 18
           delete_tags: true
