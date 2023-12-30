@@ -73,7 +73,7 @@ jobs:
         working-directory: ${{ env.source_directory }}
         run: |
           tmp_file="feeds.conf.default"
-          sed -i '/^src-git passwall1/d' ${tmp_file}
+          sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
           sed -i '/^src-git openclash/d' ${tmp_file}
           echo 'src-git passwall_pkg https://github.com/xiaorouji/openwrt-passwall-packages.git;main' >> ${tmp_file}
