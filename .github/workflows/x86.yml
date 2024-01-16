@@ -11,8 +11,8 @@ on:
   #   branches: [ "main" ]
 
   # 定时调度
-  # schedule:
-  #   - cron: "6 0 * * 0"
+  schedule:
+    - cron: '6 0 * * 5'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
