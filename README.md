@@ -6,6 +6,4 @@
 - 插件源码来源：
   - https://github.com/xiaorouji/openwrt-passwall-packages.git
   - https://github.com/xiaorouji/openwrt-passwall2.git
-  - https://github.com/vernesong/OpenClash.git
-
 

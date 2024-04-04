@@ -75,7 +75,6 @@ jobs:
           tmp_file="feeds.conf.default"
           sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
-          sed -i '/^src-git openclash/d' ${tmp_file}
           echo 'src-git passwall_pkg https://github.com/xiaorouji/openwrt-passwall-packages.git;main' >> ${tmp_file}
           echo 'src-git passwall2 https://github.com/xiaorouji/openwrt-passwall2.git;main' >> ${tmp_file}
           tmp_file="package/base-files/files/bin/config_generate"
