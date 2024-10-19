@@ -34,7 +34,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -109,7 +109,7 @@ jobs:
 
       # 上传固件
       - name: Upload firmware
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: "steps.myval.outputs.release_status == 'ok' && !cancelled()"
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
@@ -131,7 +131,7 @@ jobs:
 
       # 删除历史版本
       - name: Delete older Releases
-        uses: dev-drprasad/delete-older-releases@v0.2.1
+        uses: dev-drprasad/delete-older-releases@v0.3.4
         if: "!cancelled()"
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
