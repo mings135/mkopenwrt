@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d')" >> $GITHUB_ENV
           echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
-          git clone --depth=0 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
+          git clone https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
 
       - name: Cache Toolchain
         uses: klever1988/cachewrtbuild@main
