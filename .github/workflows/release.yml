@@ -55,7 +55,13 @@ jobs:
         run: |
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d')" >> $GITHUB_ENV
           echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
-          git clone --depth=1 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
+          git clone --depth=0 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
+
+      - name: Cache Toolchain
+        uses: klever1988/cachewrtbuild@main
+        with:
+          mixkey: ${{ matrix.arch.name }}_${{ matrix.arch.type }}
+          prefix: ${{ env.SRC_DIR }}
 
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
