@@ -3,6 +3,7 @@ name: Lede Build and Release
 on:
   schedule:
     - cron: "6 0 * * 5"
+  workflow_dispatch:
 
 env:
   SRC_DIR: lede
