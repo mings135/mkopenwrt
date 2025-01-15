@@ -108,8 +108,13 @@ jobs:
       - name: Check File
         working-directory: ${{ env.SRC_DIR }}
         run: |
+          if [ ! -e ${{ env.TARGET_DIR }} ]; then
+            echo "Build failed or output directory not found!"
+            exit 1
+          fi
           ls -l ${{ env.TARGET_DIR }}
-          if [ ! -e ${{ env.TARGET_DIR }}/*.img.gz ]; then
+
+          if ! ls -l ${{ env.TARGET_DIR }} | grep -q '.img.gz$'; then
             echo "Build failed or output file not found!"
             exit 1
           fi
