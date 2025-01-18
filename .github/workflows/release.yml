@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d')" >> $GITHUB_ENV
           echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
-          git clone https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
+          git clone --depth=1 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
 
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
@@ -140,5 +140,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         with:
-          keep_latest: 9
+          keep_latest: 25
           delete_tags: true
