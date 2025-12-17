@@ -100,7 +100,7 @@ jobs:
       - name: Compile Firmware
         working-directory: ${{ env.SRC_DIR }}
         run: |
-          make V=s -j$(nproc) >/dev/null
+          make V=s -j$(nproc) >/dev/null 2>&1
 
       - name: Check File
         working-directory: ${{ env.SRC_DIR }}
