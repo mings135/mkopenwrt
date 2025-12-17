@@ -57,7 +57,7 @@ jobs:
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d')" >> $GITHUB_ENV
           echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
           mkdir /mnt/${{ env.SRC_DIR }} && ln -s /mnt/${{ env.SRC_DIR }} ${{ env.SRC_DIR }}
-          git clone --depth=1 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
+          git clone -b 20251001 --depth=1 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
 
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
