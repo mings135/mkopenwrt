@@ -2,10 +2,10 @@
 
 **编译自己的 OpenWrt 系统：**
 
-- 固件源码来源：https://github.com/coolsnowwolf/lede
+- 固件源码来源：https://github.com/coolsnowwolf/lede.git
 - 插件源码来源：
-  - https://github.com/xiaorouji/openwrt-passwall-packages.git
-  - https://github.com/xiaorouji/openwrt-passwall2.git
+  - https://github.com/Openwrt-Passwall/openwrt-passwall2.git
+  - https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git
 
 - 通用配置：
 
@@ -14,11 +14,7 @@ CONFIG_TARGET_KERNEL_PARTSIZE=128
 CONFIG_TARGET_ROOTFS_PARTSIZE=1024
 
 CONFIG_PACKAGE_luci-app-passwall2=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_NaiveProxy=y
-
 CONFIG_PACKAGE_luci-app-wireguard=y
-CONFIG_PACKAGE_luci-app-docker=y
-CONFIG_PACKAGE_luci-app-dockerman=y
 
 # CONFIG_PACKAGE_luci-app-accesscontrol is not set
 # CONFIG_PACKAGE_luci-app-ddns is not set

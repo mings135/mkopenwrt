@@ -7,6 +7,9 @@ on:
 
 env:
   SRC_DIR: lede
+  SRC_URL: https://github.com/coolsnowwolf/lede.git
+  PASSWALL2_URL: https://github.com/Openwrt-Passwall/openwrt-passwall2.git
+  PASSWALL_PKG_URL: https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git
 
 jobs:
   build:
@@ -54,19 +57,34 @@ jobs:
 
       - name: Clone Project
         run: |
+          tmp_ver=$(git ls-remote --tags ${{ env.PASSWALL2_URL }} | sed -n '$p' | awk -F '/' '{print $NF}')
+          echo "PASSWALL2_VER=${tmp_ver}" >> $GITHUB_ENV
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d')" >> $GITHUB_ENV
           echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
           mkdir /mnt/${{ env.SRC_DIR }} && ln -s /mnt/${{ env.SRC_DIR }} ${{ env.SRC_DIR }}
-          git clone --depth=1 https://github.com/coolsnowwolf/lede ${{ env.SRC_DIR }}
-
+          git clone --depth=1 ${{ env.SRC_URL }} ${{ env.SRC_DIR }}
+          echo "------ INFO ------"
+          echo "src_dir: ${{ env.SRC_DIR }}"
+          echo "src_url: ${{ env.SRC_URL }}"
+          echo "passwall_pkg_url: ${{ env.PASSWALL_PKG_URL }}"
+          echo "passwall2_url: ${{ env.PASSWALL2_URL }}"
+          echo "passwall2_ver: ${{ env.PASSWALL2_VER }}"
+          echo "release_tag: ${{ env.RELEASE_TAG }}"
+          echo "target_dir: ${{ env.TARGET_DIR }}"
+          df -h
+          echo "------ END ------"
+         
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
         run: |
           tmp_file="feeds.conf.default"
           sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
-          echo 'src-git passwall_pkg https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' >> ${tmp_file}
-          echo 'src-git passwall2 https://github.com/Openwrt-Passwall/openwrt-passwall2.git;26.3.1-1' >> ${tmp_file}
+          echo 'src-git passwall_pkg ${{ env.PASSWALL_PKG_URL }};main' >> ${tmp_file}
+          echo 'src-git passwall2 ${{ env.PASSWALL2_URL }};${{ env.PASSWALL2_VER }}' >> ${tmp_file}
+          cat ${tmp_file}
+          echo yes
+          exit 1
           tmp_file="package/base-files/files/bin/config_generate"
           sed -i "s/system\.ntp\.enable_server='1'/system.ntp.enable_server='0'/" ${tmp_file}
 
