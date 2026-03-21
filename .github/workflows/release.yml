@@ -66,6 +66,7 @@ jobs:
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
         run: |
+          echo "LEDE_VER=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           tmp_file="feeds.conf.default"
           sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
@@ -117,32 +118,69 @@ jobs:
             exit 1
           fi
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2.6.1
+      - name: Create or Update Release
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
-        with:
-          name: ${{ env.RELEASE_TAG }}
-          tag_name: ${{ env.RELEASE_TAG }}
-          body: "OpenWrt Firmware(x86 and R2S)"
-          files: ${{ env.SRC_DIR }}/${{ env.TARGET_DIR }}/*.img.gz
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          RELEASE_TITLE: ${{ env.RELEASE_TAG }}
+          RELEASE_NOTES: |
+            OpenWrt Firmware(x86 and R2S)
+            - lede version: ${{ env.LEDE_VER }}
+            - passwall2 version: ${{ env.PASSWALL2_VER }}
+          RELEASE_FILE: ${{ env.SRC_DIR }}/${{ env.TARGET_DIR }}/*.img.gz
+        run: |
+          echo "--- 正在处理 Release $RELEASE_TAG ---" 
+          # 检查 Release 是否已经存在
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release 已存在，正在上传新文件..."
+            gh release upload "$RELEASE_TAG" "$RELEASE_FILE" --clobber
+          else
+            echo "创建新 Release 并上传文件..."
+            gh release create "$RELEASE_TAG" "$RELEASE_FILE" \
+              --title "$RELEASE_TITLE" \
+              --notes "$RELEASE_NOTES"
+          fi
 
   clean:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: Delete Workflow
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ secrets.MY_TOKEN }}
-          retain_days: 1
-          keep_minimum_runs: 9
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Delete Release
-        uses: dev-drprasad/delete-older-releases@v0.3.4
+      - name: Clean releases and workflows
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
-        with:
-          keep_latest: 25
-          delete_tags: true
+          KEEP_RELEASES: 20
+          KEEP_WORKFLOWS: 8
+        run: |
+          REL_SKIP=$((KEEP_RELEASES + 1))
+          RUN_SKIP=$((KEEP_WORKFLOWS + 1))
+
+          echo "--- 正在清理旧的 Release 和 Tag ---"
+          # 使用 --json 确保 Tag 100% 准确，保留最新的几个(排除 latest)
+          RELEASES=$(gh release list --limit 100 --json tagName,isLatest \
+            | jq -r '.[] | select(.isLatest == false) | .tagName' \
+            | tail -n +"$REL_SKIP") 
+          
+          if [ -n "$RELEASES" ]; then
+            echo "发现待删除 Release:
+          $RELEASES"
+            echo "$RELEASES" | xargs -r -I % -n 1 gh release delete % --yes --cleanup-tag
+          else
+            echo "✅ 没有需要删除的 Release"
+          fi
+
+          echo "--- 正在清理旧的 Workflow 运行记录 ---"
+          RUN_IDS=$(gh run list --limit 100 --status completed --json databaseId \
+            | jq -r '.[].databaseId' \
+            | tail -n +"$RUN_SKIP")
+          
+          if [ -n "$RUN_IDS" ]; then
+            echo "发现待删除运行记录 ID: 
+          $RUN_IDS"
+            echo "$RUN_IDS" | xargs -r -I % -n 1 gh run delete %
+          else
+            echo "✅ 没有需要删除的运行记录"
+          fi
