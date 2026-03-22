@@ -14,6 +14,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     strategy:
       matrix:
@@ -120,23 +122,23 @@ jobs:
 
       - name: Create or Update Release
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
           RELEASE_TITLE: ${{ env.RELEASE_TAG }}
           RELEASE_NOTES: |
             OpenWrt Firmware(x86 and R2S)
             - lede version: ${{ env.LEDE_VER }}
             - passwall2 version: ${{ env.PASSWALL2_VER }}
-          RELEASE_FILE: ${{ env.SRC_DIR }}/${{ env.TARGET_DIR }}/*.img.gz
+          RELEASE_FILES: ${{ env.SRC_DIR }}/${{ env.TARGET_DIR }}/*.img.gz
         run: |
           echo "--- 正在处理 Release $RELEASE_TAG ---" 
           # 检查 Release 是否已经存在
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release 已存在，正在上传新文件..."
-            gh release upload "$RELEASE_TAG" "$RELEASE_FILE" --clobber
+            gh release upload "$RELEASE_TAG" "$RELEASE_FILES" --clobber
           else
             echo "创建新 Release 并上传文件..."
-            gh release create "$RELEASE_TAG" "$RELEASE_FILE" \
+            gh release create "$RELEASE_TAG" "$RELEASE_FILES" \
               --title "$RELEASE_TITLE" \
               --notes "$RELEASE_NOTES"
           fi
@@ -144,14 +146,17 @@ jobs:
   clean:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      actions: write
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Clean releases and workflows
+      - name: Clean Releases and Workflows
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEEP_RELEASES: 20
           KEEP_WORKFLOWS: 8
         run: |
@@ -159,7 +164,6 @@ jobs:
           RUN_SKIP=$((KEEP_WORKFLOWS + 1))
 
           echo "--- 正在清理旧的 Release 和 Tag ---"
-          # 使用 --json 确保 Tag 100% 准确，保留最新的几个(排除 latest)
           RELEASES=$(gh release list --limit 100 --json tagName,isLatest \
             --jq '.[] | select(.isLatest == false) | .tagName' \
             | tail -n +"$REL_SKIP") 
