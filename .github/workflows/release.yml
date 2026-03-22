@@ -210,3 +210,16 @@ jobs:
           else
             echo "✅ 没有需要删除的运行记录"
           fi
+
+          echo "--- 正在清理 Draft Release ---"
+          DRAFTS=$(gh release list --limit 100 \
+            --json tagName,isDraft \
+            --jq '[.[] | select(.isDraft == true)] | .[1:].[] | .tagName')
+          
+          if [ -n "$DRAFTS" ]; then
+            echo "发现待删除 Draft Release:
+          $DRAFTS"
+            echo "$DRAFTS" | xargs -r -I % -n 1 gh release delete % --yes
+          else
+            echo "✅ 没有需要删除的 Draft Release"
+          fi
