@@ -5,15 +5,6 @@ on:
     - cron: "6 0 * * 5"
   workflow_dispatch:
 
-env:
-  SRC_DIR: lede
-  SRC_URL: https://github.com/coolsnowwolf/lede.git
-  PASSWALL2_URL: https://github.com/Openwrt-Passwall/openwrt-passwall2.git
-  PASSWALL_PKG_URL: https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git
-  PASSWALL2_VER: ""
-  TARGET_DIR: ""
-  LEDE_VER: ""
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +23,14 @@ jobs:
     
     outputs:
       release_tag: ${{ steps.myval.outputs.tag }}
+
+    env:
+      SRC_DIR: lede
+      SRC_URL: https://github.com/coolsnowwolf/lede.git
+      PASSWALL2_REPO: Openwrt-Passwall/openwrt-passwall2
+      TARGET_DIR: bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}
+      PASSWALL2_VER: ""
+      SRC_VER: ""  
 
     steps:
       - name: Checkout
@@ -64,23 +63,26 @@ jobs:
           swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
 
       - name: Clone Project
+        run: |
+          git clone --depth=1 ${SRC_URL} ${SRC_DIR}
+          
+      - name: Get Variables
+        working-directory: ${{ env.SRC_DIR }}
         id: myval
         run: |
-          tmp_ver=$(git ls-remote --tags ${{ env.PASSWALL2_URL }} | sed -n '$p' | awk -F '/' '{print $NF}')
+          tmp_ver=$(gh release list --repo ${PASSWALL2_REPO} --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName')
           echo "PASSWALL2_VER=${tmp_ver}" >> $GITHUB_ENV
-          echo "TARGET_DIR=bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}" >> $GITHUB_ENV
-          git clone --depth=1 ${{ env.SRC_URL }} ${{ env.SRC_DIR }}
+          echo "SRC_VER=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "tag=v$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
          
       - name: Modify Config
         working-directory: ${{ env.SRC_DIR }}
         run: |
-          echo "LEDE_VER=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           tmp_file="feeds.conf.default"
           sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
-          echo 'src-git passwall_pkg ${{ env.PASSWALL_PKG_URL }};main' >> ${tmp_file}
-          echo 'src-git passwall2 ${{ env.PASSWALL2_URL }};${{ env.PASSWALL2_VER }}' >> ${tmp_file}
+          echo "src-git passwall2 https://github.com/${PASSWALL2_REPO}.git;${PASSWALL2_VER}" >> ${tmp_file}
+          echo 'src-git passwall_pkg https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' >> ${tmp_file}
           tmp_file="package/base-files/files/bin/config_generate"
           sed -i "s/system\.ntp\.enable_server='1'/system.ntp.enable_server='0'/" ${tmp_file}
 
@@ -88,7 +90,6 @@ jobs:
         working-directory: ${{ env.SRC_DIR }}
         run: |
           ./scripts/feeds update -a
-          ./scripts/feeds install -a
           ./scripts/feeds install -a
           cat > .config <<EOF
           CONFIG_TARGET_${{ matrix.arch.name }}=y
@@ -116,13 +117,12 @@ jobs:
       - name: Check File
         working-directory: ${{ env.SRC_DIR }}
         run: |
-          if [ ! -e ${{ env.TARGET_DIR }} ]; then
+          if [ ! -e "${TARGET_DIR}" ]; then
             echo "Build failed or output directory not found!"
             exit 1
           fi
-          ls -l ${{ env.TARGET_DIR }}
 
-          if ! ls -l ${{ env.TARGET_DIR }} | grep -q '.img.gz$'; then
+          if ! find "${TARGET_DIR}" -maxdepth 1 -name "*.img.gz" -print -quit | grep -q .; then
             echo "Build failed or output file not found!"
             exit 1
           fi
@@ -134,7 +134,7 @@ jobs:
           RELEASE_TITLE: ${{ steps.myval.outputs.tag }}
           RELEASE_NOTES: |
             OpenWrt Firmware(x86 and R2S)
-            - lede version: ${{ env.LEDE_VER }}
+            - lede version: ${{ env.SRC_VER }}
             - passwall2 version: ${{ env.PASSWALL2_VER }}
           RELEASE_FILES: ${{ env.SRC_DIR }}/${{ env.TARGET_DIR }}/*.img.gz
         run: |
