@@ -26,7 +26,6 @@ jobs:
 
     env:
       SRC_DIR: lede
-      SRC_URL: https://github.com/coolsnowwolf/lede.git
       PASSWALL2_REPO: Openwrt-Passwall/openwrt-passwall2
       TARGET_DIR: bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}
       PASSWALL2_VER: ""
@@ -64,7 +63,7 @@ jobs:
 
       - name: Clone Project
         run: |
-          git clone --depth=1 ${SRC_URL} ${SRC_DIR}
+          git clone --depth=1 https://github.com/coolsnowwolf/lede.git ${SRC_DIR}
           
       - name: Get Variables
         working-directory: ${{ env.SRC_DIR }}
