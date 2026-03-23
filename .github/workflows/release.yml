@@ -26,7 +26,7 @@ jobs:
 
     env:
       SRC_DIR: lede
-      PASSWALL2_REPO: Openwrt-Passwall/openwrt-passwall2
+      PASSWALL2_REPO: https://github.com/Openwrt-Passwall/openwrt-passwall2.git
       TARGET_DIR: bin/targets/${{ matrix.arch.name }}/${{ matrix.arch.type }}
       PASSWALL2_VER: ""
       SRC_VER: ""  
@@ -68,6 +68,8 @@ jobs:
       - name: Get Variables
         working-directory: ${{ env.SRC_DIR }}
         id: myval
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           tmp_ver=$(gh release list --repo ${PASSWALL2_REPO} --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName')
           echo "PASSWALL2_VER=${tmp_ver}" >> $GITHUB_ENV
@@ -80,7 +82,7 @@ jobs:
           tmp_file="feeds.conf.default"
           sed -i '/^src-git passwall_pkg/d' ${tmp_file}
           sed -i '/^src-git passwall2/d' ${tmp_file}
-          echo "src-git passwall2 https://github.com/${PASSWALL2_REPO}.git;${PASSWALL2_VER}" >> ${tmp_file}
+          echo "src-git passwall2 ${PASSWALL2_REPO};${PASSWALL2_VER}" >> ${tmp_file}
           echo 'src-git passwall_pkg https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' >> ${tmp_file}
           tmp_file="package/base-files/files/bin/config_generate"
           sed -i "s/system\.ntp\.enable_server='1'/system.ntp.enable_server='0'/" ${tmp_file}
@@ -128,7 +130,7 @@ jobs:
 
       - name: Create or Update Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.myval.outputs.tag }}
           RELEASE_TITLE: ${{ steps.myval.outputs.tag }}
           RELEASE_NOTES: |
@@ -162,7 +164,7 @@ jobs:
 
       - name: Publish Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.build.outputs.release_tag }}
         run: |
           gh release edit "$RELEASE_TAG" --draft=false
@@ -180,7 +182,7 @@ jobs:
 
       - name: Clean Releases and Workflows
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           KEEP_RELEASES: 20
           KEEP_WORKFLOWS: 8
         run: |
